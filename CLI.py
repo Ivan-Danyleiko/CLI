@@ -1,61 +1,86 @@
-def args_parser_typed(*type_args):
-    def args_parser(func):
-        def wrapper(args):
-            function_args = args.split(" ")
+def input_error(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except KeyError as e:
+            return f"Error: {e}"
+        except ValueError as e:
+            return f"Handler error: {e}"
+        except IndexError as e:
+            return f"Index error: {e}"
+    return wrapper
 
-            if len(type_args) != len(function_args):
-                print("Incorrect arguments amount")
-                return
+@input_error
+def add_contact(contacts, *args):
+    try:
+        name, phone = args
+        contacts[name] = phone
+        return f"Contact {name} added with phone {phone}"
+    except ValueError:
+        return "Invalid input. Use 'add name phone' format."
 
-            for i in range(len(type_args)):
-                function_args[i] = type_args[i](function_args[i])
+@input_error
+def change_contact(contacts, *args):
+    try:
+        name, phone = args
+        if name in contacts:
+            contacts[name] = phone
+            return f"Phone number for {name} changed to {phone}"
+        else:
+            raise KeyError(f"Contact {name} not found")
+    except ValueError:
+        return "Invalid input. Use 'change name phone' format."
 
-            try:
-                res = func(*function_args)
-            except TypeError as err:
-                print(f"Error: {err}")
-                res = None
-            except ValueError as err:
-                print(f"Handler error: {err}")
-                res = None
+@input_error
+def get_phone(contacts, *args):
+    try:
+        name, = args
+        if name in contacts:
+            return f"Phone number for {name}: {contacts[name]}"
+        else:
+            raise KeyError(f"Contact {name} not found")
+    except ValueError:
+        return "Invalid input. Use 'phone name' format."
 
-            print(f"Command result: {res}")
+@input_error
+def show_all_contacts(contacts, *args):
+    try:
+        if not contacts:
+            return "No contacts found"
+        result = "\n".join([f"{name}: {phone}" for name, phone in contacts.items()])
+        return result
+    except ValueError:
+        return "Invalid input. Use 'show all' format."
 
-        return wrapper
-    return args_parser
-
-
-@args_parser_typed(str)
-def add_handler(number):
-    if len(number) == 0:
-        raise ValueError("Nothing I need something")
-
-    print(f"{number} was added")
-    return number
-
-
-@args_parser_typed(int, int)
-def sum_handler(a, b):
-    return a + b
-
+@input_error
+def hello(*args):
+    return "How can I help you?"
 
 def main():
+    contacts = {}
+
     table = {
-        "add": add_handler,
-        "sum": sum_handler
+        "add": add_contact,
+        "change": change_contact,
+        "phone": get_phone,
+        "show all": show_all_contacts,
+        "hello": hello
     }
 
     while True:
-        user_input = input(">>> ")
-        first_space = user_input.find(" ")
+        user_input = input(">>> ").strip()
 
-        handler_name = user_input[:first_space]
-        args = user_input[first_space:].strip()
-
-        if table.get(handler_name) is not None:
-            table[handler_name](args)
+        if user_input.lower() in {"good bye", "close", "exit"}:
+            print("Good bye!")
+            break
         else:
-            print("No such command")
+            command, *args = user_input.split()
+            matching_commands = [cmd for cmd in table.keys() if cmd.startswith(command)]
+            
+            if matching_commands:
+                print(table[matching_commands[0]](contacts, *args))
+            else:
+                print("No such command")
 
 
 if __name__ == "__main__":
