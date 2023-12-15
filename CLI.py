@@ -12,45 +12,46 @@ def input_error(func):
 
 @input_error
 def add_contact(contacts, *args):
-    try:
-        name, phone = args
+    name, phone = args
+    if not name in contacts:
         contacts[name] = phone
         return f"Contact {name} added with phone {phone}"
-    except ValueError:
+    elif name in contacts:
+        return f"The contact {name} already exists"
+    if ValueError:
         return "Invalid input. Use 'add name phone' format."
 
 @input_error
 def change_contact(contacts, *args):
-    try:
-        name, phone = args
-        if name in contacts:
-            contacts[name] = phone
-            return f"Phone number for {name} changed to {phone}"
-        else:
-            raise KeyError(f"Contact {name} not found")
-    except ValueError:
+    name, phone = args
+    if name in contacts:
+        contacts[name] = phone
+        return f"Phone number for {name} changed to {phone}"
+    elif not name in contacts:
+        raise KeyError(f"Contact {name} not found")
+    if ValueError:
         return "Invalid input. Use 'change name phone' format."
 
 @input_error
 def get_phone(contacts, *args):
-    try:
-        name, = args
-        if name in contacts:
-            return f"Phone number for {name}: {contacts[name]}"
-        else:
-            raise KeyError(f"Contact {name} not found")
-    except ValueError:
+    name, = args
+    if name in contacts:
+        return f"Phone number for {name}: {contacts[name]}"
+    elif not name in contacts:
+        raise KeyError(f"Contact {name} not found")
+    if ValueError:
         return "Invalid input. Use 'phone name' format."
+    
 
 @input_error
 def show_all_contacts(contacts, *args):
-    try:
-        if not contacts:
-            return "No contacts found"
-        result = "\n".join([f"{name}: {phone}" for name, phone in contacts.items()])
-        return result
-    except ValueError:
-        return "Invalid input. Use 'show all' format."
+    if not contacts:
+        return "No contacts found"
+    
+    result = "\n".join([f"{name}: {phone}" for name, phone in contacts.items()])
+    return result
+    
+    
 
 @input_error
 def hello(*args):
@@ -68,19 +69,22 @@ def main():
     }
 
     while True:
-        user_input = input(">>> ").strip()
+        user_input = input(">>> ").strip().lower()
 
-        if user_input.lower() in {"good bye", "close", "exit"}:
+        if user_input in {"good bye", "close", "exit"}:
             print("Good bye!")
             break
         else:
             command, *args = user_input.split()
-            matching_commands = [cmd for cmd in table.keys() if cmd.startswith(command)]
-            
-            if matching_commands:
-                print(table[matching_commands[0]](contacts, *args))
+
+            if command == "show" and args and args[0] == "all":
+                print(table["show all"](contacts))
+            elif command in table:
+                print(table[command](contacts, *args))
             else:
                 print("No such command")
+
+
 
 
 if __name__ == "__main__":
