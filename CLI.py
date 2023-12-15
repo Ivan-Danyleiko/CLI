@@ -16,10 +16,8 @@ def add_contact(contacts, *args):
     if not name in contacts:
         contacts[name] = phone
         return f"Contact {name} added with phone {phone}"
-    elif name in contacts:
+    else:
         return f"The contact {name} already exists"
-    if ValueError:
-        return "Invalid input. Use 'add name phone' format."
 
 @input_error
 def change_contact(contacts, *args):
@@ -27,20 +25,16 @@ def change_contact(contacts, *args):
     if name in contacts:
         contacts[name] = phone
         return f"Phone number for {name} changed to {phone}"
-    elif not name in contacts:
+    else:
         raise KeyError(f"Contact {name} not found")
-    if ValueError:
-        return "Invalid input. Use 'change name phone' format."
 
 @input_error
 def get_phone(contacts, *args):
     name, = args
     if name in contacts:
         return f"Phone number for {name}: {contacts[name]}"
-    elif not name in contacts:
+    else:
         raise KeyError(f"Contact {name} not found")
-    if ValueError:
-        return "Invalid input. Use 'phone name' format."
     
 
 @input_error
@@ -83,8 +77,6 @@ def main():
                 print(table[command](contacts, *args))
             else:
                 print("No such command")
-
-
 
 
 if __name__ == "__main__":
