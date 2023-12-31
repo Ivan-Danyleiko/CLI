@@ -1,3 +1,4 @@
+from collections import UserDict
 from datetime import datetime
 
 def error_handler(func):
@@ -21,7 +22,20 @@ def is_valid_date(date_str):
 
 class Field:
     def __init__(self, value):
-        self.value = value
+        self.__value = value
+
+    def validate(self, value):
+        return True
+
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, new_value):
+        if not self.validate(new_value):
+            raise ValueError("Invalid value format")
+        self.__value = new_value
 
     def __str__(self):
         return str(self.value)
@@ -30,24 +44,18 @@ class Birthday(Field):
     def __init__(self, value):
         self.value = value
 
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
-    def value(self, new_value):
-        if not is_valid_date(new_value):
-            raise ValueError("Invalid birthday format")
-        self._value = new_value
+    def validate(self, value):
+        return is_valid_date(value)
 
 class Name(Field):
     pass
 
 class Phone(Field):
     def __init__(self, value):
-        if not isinstance(value, str) or not value.isdigit() or len(value) != 10:
-            raise ValueError("Invalid phone number format")
-        super().__init__(value)
+        self.value = value
+
+    def validate(self, value):
+        return isinstance(value, str) and value.isdigit() and len(value) == 10
 
 class Record:
     def __init__(self, name, birthday=None):
@@ -100,7 +108,7 @@ class Record:
         birthday_str = f", birthday: {self.birthday}" if self.birthday else ""
         return f"Contact name: {self.name.value}, phones: {phones_str}{birthday_str}"
 
-class AddressBook:
+class AddressBook(UserDict):
     def __init__(self):
         self.data = {}
 
@@ -119,6 +127,11 @@ class AddressBook:
 
     def __iter__(self):
         return iter(self.data.values())
+
+    def iterator(self, n):
+        records = list(self.data.values())
+        for i in range(0, len(records), n):
+            yield records[i:i + n]
 
 # Приклад використання
 if __name__ == "__main__":
@@ -154,4 +167,8 @@ if __name__ == "__main__":
         print(f"{john.name.value}: {found_phone}")  # Виведення: 5555555555
 
     # Видалення запису Jane
-    book.delete("Jane")
+
+    for chunk in book.iterator(2):
+        print("Chunk:")
+        for record in chunk:
+            print(record)
