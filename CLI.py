@@ -3,6 +3,9 @@ from datetime import datetime
 import pickle
 
 def error_handler(func):
+    """
+    Декоратор для обробки помилок під час виклику функцій.
+    """
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -15,6 +18,9 @@ def error_handler(func):
     return wrapper
 
 def is_valid_date(date_str, format_str):
+    """
+    Перевірка, чи вказана дата має правильний формат.
+    """
     try:
         datetime.strptime(date_str, format_str)
         return True
@@ -22,6 +28,9 @@ def is_valid_date(date_str, format_str):
         return False
 
 class Field:
+    """
+    Клас-база для представлення полів контакту.
+    """
     def __init__(self, value):
         self.__value = value
 
@@ -42,6 +51,9 @@ class Field:
         return str(self.value)
 
 class Birthday(Field):
+    """
+    Клас для представлення дати народження контакту.
+    """
     def __init__(self, value=None):
         self.value = value
 
@@ -49,9 +61,15 @@ class Birthday(Field):
         return value is None or is_valid_date(value, '%d-%m-%Y')
 
 class Name(Field):
+    """
+    Клас для представлення імені контакту.
+    """
     pass
 
 class Phone(Field):
+    """
+    Клас для представлення номеру телефону контакту.
+    """
     def __init__(self, value):
         self.value = value
 
@@ -60,6 +78,9 @@ class Phone(Field):
     
 @error_handler
 def add_contact(contacts, *args):
+    """
+    Додавання нового контакту або зміна існуючого.
+    """
     if len(args) < 2 or len(args) > 3:
         raise ValueError("Invalid number of arguments for 'add' command. Usage: add [name] [phone] [birthday]")
 
@@ -79,6 +100,9 @@ def add_contact(contacts, *args):
 
 @error_handler
 def change_contact(contacts, *args):
+    """
+    Зміна інформації про існуючий контакт.
+    """
     if len(args) < 2 or len(args) > 3:
         raise ValueError("Invalid number of arguments for 'change' command. Usage: change [name] [phone] [birthday]")
 
@@ -105,6 +129,9 @@ def change_contact(contacts, *args):
 
 @error_handler
 def get_phone(contacts, *args):
+    """
+    Отримання номеру телефону для вказаного контакту.
+    """
     if len(args) != 1:
         raise ValueError("Invalid number of arguments for 'phone' command. Usage: phone [name]")
 
@@ -116,6 +143,9 @@ def get_phone(contacts, *args):
 
 @error_handler
 def show_all_contacts(contacts, *args):
+    """
+    Показ усіх контактів.
+    """
     if not contacts:
         return "No contacts found"
 
@@ -124,6 +154,9 @@ def show_all_contacts(contacts, *args):
 
 @error_handler
 def search_contacts(contacts, search_term):
+    """
+    Пошук контактів за заданим рядком.
+    """
     search_results = []
 
     for name, contact in contacts.items():
@@ -137,9 +170,15 @@ def search_contacts(contacts, search_term):
 
 @error_handler
 def hello(*args):
+    """
+    Виведення привітання.
+    """
     return "Hello! How can I assist you?"
 
 class AddressBook(UserDict):
+    """
+    Клас для представлення адресної книги.
+    """
     def __init__(self):
         super().__init__()
 
@@ -184,6 +223,9 @@ class AddressBook(UserDict):
         pass
 
     def run_interactive_console(self):
+        """
+        Запуск інтерактивної консолі для взаємодії з користувачем.
+        """
         while True:
             user_input = input(">>> ").strip().lower()
 
@@ -208,6 +250,9 @@ class AddressBook(UserDict):
                     print("No such command")
 
     def search_contacts(self, search_term):
+        """
+        Пошук контактів за заданим рядком.
+        """
         matching_contacts = []
         for name, contact in self.data.items():
             if (
@@ -218,10 +263,16 @@ class AddressBook(UserDict):
         return matching_contacts
 
     def save_to_file(self, filename):
+        """
+        Збереження даних у файл.
+        """
         with open(filename, 'wb') as file:
             pickle.dump(self.data, file)
 
     def load_from_file(self, filename):
+        """
+        Завантаження даних з файлу.
+        """
         try:
             with open(filename, 'rb') as file:
                 self.data = pickle.load(file)
