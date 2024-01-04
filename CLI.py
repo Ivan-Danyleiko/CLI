@@ -3,9 +3,6 @@ from datetime import datetime
 import pickle
 
 def error_handler(func):
-    """
-    Декоратор для обробки помилок під час виклику функцій.
-    """
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -18,9 +15,6 @@ def error_handler(func):
     return wrapper
 
 def is_valid_date(date_str, format_str):
-    """
-    Перевірка, чи вказана дата має правильний формат.
-    """
     try:
         datetime.strptime(date_str, format_str)
         return True
@@ -28,9 +22,6 @@ def is_valid_date(date_str, format_str):
         return False
 
 class Field:
-    """
-    Клас-база для представлення полів контакту.
-    """
     def __init__(self, value):
         self.__value = value
 
@@ -51,9 +42,6 @@ class Field:
         return str(self.value)
 
 class Birthday(Field):
-    """
-    Клас для представлення дати народження контакту.
-    """
     def __init__(self, value=None):
         self.value = value
 
@@ -61,26 +49,17 @@ class Birthday(Field):
         return value is None or is_valid_date(value, '%d-%m-%Y')
 
 class Name(Field):
-    """
-    Клас для представлення імені контакту.
-    """
     pass
 
 class Phone(Field):
-    """
-    Клас для представлення номеру телефону контакту.
-    """
     def __init__(self, value):
         self.value = value
 
     def validate(self, value):
         return isinstance(value, str) and value.isdigit()
-    
+
 @error_handler
 def add_contact(contacts, *args):
-    """
-    Додавання нового контакту або зміна існуючого.
-    """
     if len(args) < 2 or len(args) > 3:
         raise ValueError("Invalid number of arguments for 'add' command. Usage: add [name] [phone] [birthday]")
 
@@ -89,7 +68,6 @@ def add_contact(contacts, *args):
 
     if name in contacts:
         existing_contact = contacts[name]
-        # Always add the birthday to the existing phone number
         existing_contact['phone'].value += f", {birthday}" if birthday else ""
         existing_contact['birthday'].value = birthday
         return f"Birthday added to contact {name}. New phone: {existing_contact['phone'].value}"
@@ -97,12 +75,8 @@ def add_contact(contacts, *args):
         contacts[name] = {'phone': Phone(phone), 'birthday': Birthday(birthday)}
         return f"Contact {name} added with phone {phone}" + (f" and birthday {birthday}" if birthday else "")
 
-
 @error_handler
 def change_contact(contacts, *args):
-    """
-    Зміна інформації про існуючий контакт.
-    """
     if len(args) < 2 or len(args) > 3:
         raise ValueError("Invalid number of arguments for 'change' command. Usage: change [name] [phone] [birthday]")
 
@@ -114,10 +88,8 @@ def change_contact(contacts, *args):
         if phone:
             existing_contact['phone'].value = phone
         if birthday:
-            # Check if the date has the correct format
             if birthday is not None and not is_valid_date(birthday, '%d-%m-%Y'):
                 raise ValueError("Invalid value format for 'birthday'. Use the format: DD-MM-YYYY")
-            # Check if the 'birthday' object already exists
             if existing_contact['birthday']:
                 existing_contact['birthday'].value = birthday
             else:
@@ -126,12 +98,8 @@ def change_contact(contacts, *args):
     else:
         raise KeyError(f"Contact {name} not found")
 
-
 @error_handler
 def get_phone(contacts, *args):
-    """
-    Отримання номеру телефону для вказаного контакту.
-    """
     if len(args) != 1:
         raise ValueError("Invalid number of arguments for 'phone' command. Usage: phone [name]")
 
@@ -143,9 +111,6 @@ def get_phone(contacts, *args):
 
 @error_handler
 def show_all_contacts(contacts, *args):
-    """
-    Показ усіх контактів.
-    """
     if not contacts:
         return "No contacts found"
 
@@ -154,9 +119,6 @@ def show_all_contacts(contacts, *args):
 
 @error_handler
 def search_contacts(contacts, search_term):
-    """
-    Пошук контактів за заданим рядком.
-    """
     search_results = []
 
     for name, contact in contacts.items():
@@ -170,15 +132,9 @@ def search_contacts(contacts, search_term):
 
 @error_handler
 def hello(*args):
-    """
-    Виведення привітання.
-    """
     return "Hello! How can I assist you?"
 
 class AddressBook(UserDict):
-    """
-    Клас для представлення адресної книги.
-    """
     def __init__(self):
         super().__init__()
 
@@ -195,15 +151,12 @@ class AddressBook(UserDict):
     def hello(*args):
         return "Hello! How can I assist you?"
 
-    @error_handler
     def add_record(self, user):
         self.data[user.name.value] = user
 
-    @error_handler
     def find(self, name):
         return self.data.get(name)
 
-    @error_handler
     def delete(self, name):
         if name in self.data:
             del self.data[name]
@@ -216,16 +169,7 @@ class AddressBook(UserDict):
         for i in range(0, len(records), n):
             yield records[i:i + n]
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        pass
-
     def run_interactive_console(self):
-        """
-        Запуск інтерактивної консолі для взаємодії з користувачем.
-        """
         while True:
             user_input = input(">>> ").strip().lower()
 
@@ -250,9 +194,6 @@ class AddressBook(UserDict):
                     print("No such command")
 
     def search_contacts(self, search_term):
-        """
-        Пошук контактів за заданим рядком.
-        """
         matching_contacts = []
         for name, contact in self.data.items():
             if (
@@ -263,16 +204,10 @@ class AddressBook(UserDict):
         return matching_contacts
 
     def save_to_file(self, filename):
-        """
-        Збереження даних у файл.
-        """
         with open(filename, 'wb') as file:
             pickle.dump(self.data, file)
 
     def load_from_file(self, filename):
-        """
-        Завантаження даних з файлу.
-        """
         try:
             with open(filename, 'rb') as file:
                 self.data = pickle.load(file)
@@ -280,5 +215,6 @@ class AddressBook(UserDict):
             print(f"File {filename} not found. A new AddressBook object is created.")
 
 if __name__ == "__main__":
-    with AddressBook() as book:
-        book.run_interactive_console()
+    book = AddressBook()
+    book.load_from_file("address_book_data.pkl")
+    book.run_interactive_console()
